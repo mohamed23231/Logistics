@@ -5,26 +5,6 @@ import SignupForm from '../components/auth/SignupForm';
 import { useRouter } from 'next/router';
 
 /**
- * Schema for validating signup form data using Zod.
- */
-const schema = z.object({
-    email: z.string().email(),
-    password: z.string()
-        .min(8)
-        .regex(
-            /(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()\-_=+{};:,<.>ยง~])(?=.{8,})/,
-            { message: 'Password must contain at least one lowercase letter, one uppercase letter, and one special character' }
-        ),
-        confirmPassword: z.string()
-        .transform((data) => {
-            if (data.confirmPassword !== data.password) {
-                throw new Error("Passwords don't match");
-            }
-            return data.confirmPassword;
-        })
-});
-
-/**
  * Component for handling user signup.
  */
 export default function Signup() {
@@ -42,11 +22,27 @@ export default function Signup() {
     });
 
     /**
+     * Schema for validating signup form data using Zod.
+     */
+    const schema = z.object({
+        email: z.string().email(),
+        password: z
+            .string()
+            .min(8)
+            .regex(
+                /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()\-_=+{};:,<.>ยง~]).{8,}$/,
+                { message: 'Password must contain at least one lowercase letter, one uppercase letter, and one special character' }
+            ),
+        confirmPassword: z.string()
+            .refine((value) => value === formData.password, { message: "Passwords don't match" })
+    });
+
+    /**
      * Logic for user signup.
      */
     const loginLogic = async () => {
         try {
-            console.log('hello')
+            console.log('hello');
             const res = await axios.post('https://ecommerce.routemisr.com/api/v1/auth/signup', {
                 email: formData.email,
                 password: formData.password,
@@ -58,7 +54,7 @@ export default function Signup() {
 
             console.log(res.data);
         } catch (error) {
-            console.log('hello from login error',error)
+            console.log('hello from login error', error);
             if (error?.response) {
                 setFormErrors({ ...formErrors, serverError: error.response.data.message });
             }
@@ -71,32 +67,24 @@ export default function Signup() {
      */
     const handleSubmite = async (e) => {
         e.preventDefault();
-        
+
         setIsLoading(true); // Set loading to true when the button is clicked
         try {
-
-            if (!formData.email || !formData.password || !formData.confirmPassword) {
-                throw new Error('Incomplete form data');
-            }
-    
             console.log('Before schema validation');
             await schema.parseAsync(formData);
             console.log('After schema validation');
-        
             await loginLogic(); // Perform signup logic
         } catch (error) {
             console.error('Validation Error:', error);
-            console.log('Error Message:', error.message); // Add this line for debugging
+            console.error('Error Message:', error.message); // Add this line for debugging
 
-            if (error.message === "Passwords don't match") {
-                setFormErrors({ ...formErrors, confirmPassword: "Passwords don't match" });
-            } else if (error.errors && error.errors.length > 0) {
+            if (error.errors && error.errors.length > 0) {
                 const errors = {};
                 error.errors.forEach(err => {
                     errors[err.path[0]] = err.message;
                 });
                 setFormErrors(errors);
-                }
+            }
         } finally {
             setIsLoading(false); // Set loading to false after signup logic completes
         }

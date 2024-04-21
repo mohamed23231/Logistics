@@ -5,7 +5,7 @@ export default function SignupForm({ formData, handleChange, handleSubmite, form
     return (
         <>
 
-            <div className="mt-20 flex justify-center items-center">
+            <div className="mt-7 flex justify-center items-center">
                 <form className="max-w-sm mx-auto grow" >
                     <h2 className="font-semibold text-4xl mb-7">Sign Up</h2>
                     <div className="text-center my-5 text-gray-600	">
@@ -42,7 +42,7 @@ export default function SignupForm({ formData, handleChange, handleSubmite, form
                         {isLoading ? <Spinner size="sm" color="primary" /> : 'Submit'}
                         </button>
 
-                        <Link href='/login' className="text-center py-7 text-gray-600	">
+                        <Link href='/login' className="flex justify-center items-center text-center mt-4 text-gray-500	">
                     <p >Already have Account? <span className="text-gray-900">Login</span> </p>
                     </Link>
 
