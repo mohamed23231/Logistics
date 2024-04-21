@@ -3,38 +3,23 @@ import axios from 'axios';
 import { z } from 'zod';
 import ResetPasswordForm from '../components/auth/ResetPasswordForm';
 
- 
-/**
- * Schema for validating signup form data using Zod.
- */
 const schema = z.object({
     email: z.string().email(),
 });
 
-/**
- * Component for handling user signup.
- */
-export default function Signup() {
-
-    // State for form errors
+export default function ResetPassword() {
     const [formErrors, setFormErrors] = useState({});
-    // State for loading status
     const [isLoading, setIsLoading] = useState(false);
-    // State for form data
+    const [isSuccess, setIsSuccess] = useState(false); // State for success status
     const [formData, setFormData] = useState({
-        email: "",
+        email: ""
     });
 
-    /**
-     * Logic for user signup.
-     */
-    const resetPwLogic = async () => {
+    const resetPasswordLogic = async () => {
         try {
-            const res = await axios.post('https://ecommerce.routemisr.com/api/v1/auth/signup', 
-            formData,
-            );
-
+            const res = await axios.post('https://ecommerce.routemisr.com/api/v1/auth/forgotPasswords', formData);
             console.log(res.data);
+            setIsSuccess(true); // Set isSuccess to true on successful API call
         } catch (error) {
             if (error?.response) {
                 setFormErrors({ ...formErrors, serverError: error.response.data.message });
@@ -42,16 +27,12 @@ export default function Signup() {
         }
     };
 
-    /**
-     * Handler for form submission.
-     * @param {Event} e - Form submit event.
-     */
-    const handleSubmite = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsLoading(true); // Set loading to true when the button is clicked
+        setIsLoading(true);
         try {
-            await schema.parseAsync(formData); // Validate the form data asynchronously
-            await loginLogic(); // Perform signup logic
+            await schema.parseAsync(formData);
+            await resetPasswordLogic();
         } catch (error) {
             if (error.errors && error.errors.length > 0) {
                 const errors = {};
@@ -61,27 +42,23 @@ export default function Signup() {
                 setFormErrors(errors);
             }
         } finally {
-            setIsLoading(false); // Set loading to false after signup logic completes
+            setIsLoading(false);
         }
     };
 
-    /**
-     * Handler for input changes.
-     * @param {Event} e - Input change event.
-     */
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
         setFormErrors({ ...formErrors, [e.target.name]: undefined, serverError: undefined });
     };
 
-    // Render the SignupForm component with props
     return (
         <ResetPasswordForm
             handleChange={handleChange}
-            handleSubmi={handleSubmite}
+            handleSubmit={handleSubmit}
             formData={formData}
             formErrors={formErrors}
             isLoading={isLoading}
+            isSuccess={isSuccess} // Pass isSuccess as a prop to the ResetPasswordForm component
         />
     );
 }
